@@ -1,3 +1,4 @@
+
 /* Donut SMP–style grid (static, GitHub Pages friendly) */
 :root{
   --bg: #0e0f11;
@@ -11,6 +12,10 @@
 
 *{box-sizing:border-box}
 html,body{height:100%}
+
+/* Keep layout stable: prevent scrollbar from popping in/out */
+html{ scrollbar-gutter: stable; }
+body{ overflow-y: scroll; }
 body{
   margin:0;
   background:var(--bg);
@@ -18,13 +23,16 @@ body{
   font:16px/1.4 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
 }
 
-.wrap{max-width:1200px; margin:0 auto; padding:32px;}
+/* Page width similar to DonutSMP */
+.wrap{max-width:1280px; margin:0 auto; padding:40px;}
 
 .grid{
   display:grid;
-  gap:22px;
-  grid-template-columns: 1.1fr 1.6fr 1.1fr;
-  grid-template-rows: 260px 300px;
+  gap:24px;
+  /* Left and right columns roughly "card" width, center flexible like DonutSMP */
+  grid-template-columns: minmax(280px, 340px) 1fr minmax(280px, 340px);
+  /* Top row is square-ish (logo/discord ~300px), second row taller */
+  grid-template-rows: 300px 420px;
   grid-template-areas:
     "logo store discord"
     "stats join  join";
@@ -42,6 +50,7 @@ body{
   transition:transform .2s ease, outline-color .2s ease;
   text-decoration:none;
   color:inherit;
+  cursor:inherit;
 }
 .card:hover{ transform:scale(1.02); outline-color:#3b82f6; }
 
@@ -54,9 +63,11 @@ body{
   filter:saturate(1.1);
 }
 /* soft vignette for readability */
-.media::after{
-  content:""; position:absolute; inset:0;
-  background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55));
+.media::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,.05), rgba(0,0,0,.15));
 }
 
 /* shared labels */
@@ -64,8 +75,8 @@ body{
   position:absolute; top:16px; left:16px;
   background:rgba(0,0,0,.5);
   backdrop-filter:saturate(130%) blur(4px);
-  padding:8px 12px; border-radius:12px;
-  font-weight:700; letter-spacing:.3px;
+  padding:10px 14px; border-radius:14px;
+  font-weight:800; letter-spacing:.3px;
   text-transform:capitalize;
 }
 
@@ -74,52 +85,116 @@ body{
 .card--logo .footer{
   position:absolute; inset:auto 0 0 0;
   display:flex; gap:10px; align-items:center;
-  padding:14px 16px;
+  padding:16px 18px;
   background:linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.65) 60%);
-  font-weight:700;
+  font-weight:800;
 }
 .card--logo .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
-/* store card */
-.card--store{ grid-area:store; }
+.card--logo .media {
+  --bg: url('assets/chumbucket.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
 
 /* discord stat block */
 .card--discord{ grid-area:discord; display:flex; align-items:center; justify-content:center; }
 .card--discord .discord{
-  display:flex; flex-direction:column; align-items:center; gap:14px;
+  display:flex; flex-direction:column; align-items:center; gap:16px;
 }
-.card--discord .big{ font-weight:800; font-size:32px; line-height:1; }
-.card--discord .small{ color:var(--muted); font-weight:600; }
+.card--discord .big{ font-weight:900; font-size:32px; line-height:1; }
+.card--discord .small{ color:var(--muted); font-weight:700; }
 
 /* stats */
-.card--stats{ grid-area:stats; }
+.card--stats{ grid-area:stats; cursor:pointer; }
 .card--stats .label{ left:18px; top:18px; }
+
+.card--stats .media {
+  --bg: url('assets/stats.png');
+  background-size: fill;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 /* join card */
 .card--join{ grid-area:join; }
 .card--join .join{
-  position:absolute; right:22px; bottom:22px;
-  width:min(420px, 90%);
+  position:absolute; right:24px; bottom:24px;
+  width:min(380px, 92%);
   display:grid; gap:10px;
   background:rgba(0,0,0,.55);
-  padding:14px; border-radius:14px;
+  padding:14px; border-radius:16px;
   backdrop-filter: blur(6px);
 }
-.card--join label{ display:grid; gap:6px; font-weight:600; }
+.card--join label{ display:grid; gap:6px; font-weight:700; }
 .card--join input{
-  width:100%; padding:10px 12px; border-radius:10px;
+  width:100%; padding:11px 12px; border-radius:12px;
   border:1px solid var(--ring); background:#0f1114; color:var(--text);
+  font-size:14px;
 }
 .card--join button{
-  padding:10px 12px; border-radius:10px; border:0; cursor:pointer;
-  background:#3b82f6; color:white; font-weight:700;
+  padding:11px 12px; border-radius:12px; border:0; cursor:pointer;
+  background:#3b82f6; color:white; font-weight:800;
+  font-size:14px;
+}
+
+.card--join .media {
+  --bg: url('assets/howto.png');
+  background-size: 118%;
+  background-position: 30% 18%;
+  background-repeat: no-repeat;
+}
+
+/* --- Animated embed open/close --- */
+.embed-container{
+  grid-column: 1 / -1;
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  outline:1px solid var(--ring);
+  /* Slightly shorter default to match the new card scale */
+  --embedH: 1040px;
+  --origin: top;
+  transform-origin: var(--origin);
+  max-height: 0;
+  opacity: 0;
+  transform: scaleY(0.98);
+  transition: max-height 900ms ease, opacity 900ms ease, transform 900ms ease;
+  will-change: max-height, opacity, transform;
+}
+.embed-container.open{
+  max-height: var(--embedH);
+  opacity: 1;
+  transform: scaleY(1);
+}
+.embed-container.from-top{ --origin: top; }
+.embed-container.from-bottom{ --origin: bottom; }
+
+.embed-container iframe{
+  width:100%;
+  height:var(--embedH);
+  border:0;
+  display:block;
 }
 
 /* responsive */
+@media (max-width: 1200px){
+  .wrap{ max-width:100%; padding:36px; }
+  .grid{
+    grid-template-columns: minmax(260px, 320px) 1fr minmax(260px, 320px);
+    grid-template-rows: 280px 400px;
+    gap:22px;
+  }
+  .embed-container{ --embedH: 860px; }
+}
 @media (max-width: 980px){
+  .wrap{ padding:28px; }
   .grid{
     grid-template-columns: 1fr;
-    grid-template-rows: repeat(5, 240px);
+    grid-template-rows: repeat(5, 280px);
     grid-template-areas:
       "logo"
       "store"
@@ -128,4 +203,73 @@ body{
       "join";
   }
   .card--join .join{ position:static; width:100%; margin:16px; }
+  .embed-container{ --embedH: 720px; }
+}
+@media (max-width: 520px){
+  .wrap{ padding:20px; }
+  .grid{ gap:18px; grid-template-rows: repeat(5, 240px); }
+  .embed-container{ --embedH: 520px; }
+}
+
+
+/* Controls inside open embed */
+.embed-controls{
+  position:absolute;
+  top:12px; right:12px;
+  display:flex; gap:8px;
+  z-index:10;
+  opacity:0;
+  transform: translateY(-6px);
+  transition: opacity .25s ease, transform .25s ease;
+  pointer-events:none; /* avoid hover when hidden */
+}
+.embed-container.open .embed-controls{
+  opacity:1;
+  transform: translateY(0);
+  pointer-events:auto;
+}
+
+.embed-btn{
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: 1px solid rgba(255,255,255,.15);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.embed-btn:hover{ background: rgba(59,130,246,0.8); border-color: transparent; }
+
+
+/* store card used for map */
+.card--store .media {
+  --bg: url('assets/map.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Blog section styles */
+.blog-header {
+  background: rgba(0,0,0,0.6);
+  padding: 16px;
+  border-bottom: 1px solid var(--ring);
+}
+
+.blog-header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.blog-content {
+  padding: 20px;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+.blog-content h2 {
+  font-size: 20px;
+  margin-top: 0;
 }
